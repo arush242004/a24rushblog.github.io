@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>On the beauty of convergence — your name</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,300&family=Shippori+Mincho:wght@400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="progress-bar" id="pb"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo">
+        <span class="logo-en">your name</span>
+        <span class="logo-jp">静かな場所</span>
+      </a>
+      <nav>
+        <a href="../home.html"  class="nav-link">writing</a>
+        <a href="../about.html" class="nav-link">about</a>
+      </nav>
+    </div>
+    <div class="rule"></div>
+  </header>
+
+  <main class="main main--narrow">
+    <article class="fade-in">
+      <header class="post-header">
+        <div class="post-row-meta">
+          <span class="date">April 12, 2026</span>
+          <span class="tag">mathematics</span>
+        </div>
+        <h1 class="post-title-large">On the beauty of convergence</h1>
+      </header>
+      <div class="prose">
+        <p>There is something quietly profound about a sequence that approaches a value it never actually reaches. Consider $a_n = 1 - \frac{1}{n}$. As $n$ grows, the terms get closer and closer to $1$ — but no individual term <em>is</em> $1$. The limit exists; the arrival never comes.</p>
+        <p>Formally, $\lim_{n \to \infty} a_n = L$ if for every $\varepsilon > 0$, there exists an $N$ such that for all $n > N$: $$|a_n - L| < \varepsilon$$</p>
+        <p>This is the epsilon-N definition. It's a statement about control: however tightly you draw the circle around $L$, the sequence eventually stays inside it.</p>
+        <p>What I find beautiful here is not the formalism — it's the philosophy embedded in it. The definition doesn't say the sequence reaches $L$. It says the sequence can be made <em>arbitrarily close</em>. Closeness, not arrival. Approach, not destination.</p>
+        <h2>The Cauchy criterion</h2>
+        <p>A sequence is Cauchy if its terms eventually become close to <em>each other</em> — regardless of whether you know the limit in advance: $$\forall \varepsilon > 0,\ \exists N:\ \forall m, n > N,\ |a_m - a_n| < \varepsilon$$</p>
+        <p>In complete metric spaces, Cauchy sequences always converge. The self-consistency of the sequence — its internal coherence — is enough to guarantee a limit. You don't need to know where you're going. You just need to ensure you're not drifting apart from yourself.</p>
+        <p>I find that surprisingly moving.</p>
+        <h2>Asymptotes as a way of being</h2>
+        <p>An asymptote is a line a curve approaches but never reaches. In calculus, it signals a kind of controlled divergence — the function grows, but in a bounded direction.</p>
+        <p>I've started thinking of certain personal qualities this way. Patience. Precision. Equanimity. You approach them; you don't arrive. The approaching is the practice. The limit is real even if you never touch it.</p>
+        <p>There's a word in Urdu — <em>sabr</em> — usually translated as patience, but it carries more: endurance, steadiness, trust in the process. Mathematically, I think of it as the Cauchy condition applied to character. Stay close to yourself. Don't drift. The convergence will follow.</p>
+      </div>
+      <footer class="post-footer">
+        <a href="../home.html" class="back-link">← all writing</a>
+      </footer>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026</span>
+    <a href="https://github.com/yourusername" target="_blank">github</a>
+  </footer>
+
+  <script>
+    var pb = document.getElementById('pb');
+    window.addEventListener('scroll', function(){
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      pb.style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%';
+    }, {passive:true});
+  </script>
+</body>
+</html>

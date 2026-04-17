@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nazar aur sabr — your name</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,300&family=Shippori+Mincho:wght@400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css"/>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="progress-bar" id="pb"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo">
+        <span class="logo-en">your name</span>
+        <span class="logo-jp">静かな場所</span>
+      </a>
+      <nav>
+        <a href="../home.html"  class="nav-link">writing</a>
+        <a href="../about.html" class="nav-link">about</a>
+      </nav>
+    </div>
+    <div class="rule"></div>
+  </header>
+
+  <main class="main main--narrow">
+    <article class="fade-in">
+      <header class="post-header">
+        <div class="post-row-meta">
+          <span class="date">March 5, 2026</span>
+          <span class="tag">essay</span>
+        </div>
+        <h1 class="post-title-large">Nazar aur sabr</h1>
+      </header>
+      <div class="prose">
+        <p><em>Nazar</em> means gaze, attention, watchfulness. <em>Sabr</em> means patience — but more than patience: endurance, steadiness, the willingness to wait without becoming someone else while you wait.</p>
+        <p>At first these seem opposed. Nazar is active, alert, scanning. Sabr is still, rooted, unhurried. But I've come to think they're not opposites — they're the same quality expressed across different timescales.</p>
+        <p>Nazar without sabr becomes anxiety. You see everything, notice everything, but you can't let anything land. The attention is jittery, compulsive. It notices and immediately moves to the next thing to notice.</p>
+        <p>Sabr without nazar becomes passivity. You wait — but for what? Without attention, patience is just inertia dressed up as virtue. You're not enduring something; you're simply not acting.</p>
+        <p>Together, though: you watch, carefully, without flinching. And you wait, without drifting. The attention grounds the patience; the patience steadies the attention. You hold both at once and something clarifies.</p>
+        <h2>In practice</h2>
+        <p>I've tried to learn what this actually looks like in a day. Work on hard things, without checking whether the work is going well every five minutes. Let the problem breathe. Stay in the room with it. Don't seek reassurance from early signals.</p>
+        <p>Read a book through to the end before deciding whether you like it. Sit with confusion long enough that it resolves, rather than switching to something easier. Run a consistent distance each morning even when you don't feel like it — especially then.</p>
+        <p>Small things. But I think these small things are the practice. You don't develop nazar aur sabr by waiting for a significant occasion. You develop it in the ordinary texture of days, doing ordinary work slowly and honestly and without theatrics.</p>
+        <p>Head low. Do the work. Go home.</p>
+      </div>
+      <footer class="post-footer">
+        <a href="../home.html" class="back-link">← all writing</a>
+      </footer>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026</span>
+    <a href="https://github.com/yourusername" target="_blank">github</a>
+  </footer>
+  <script>
+    var pb = document.getElementById('pb');
+    window.addEventListener('scroll', function(){
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      pb.style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%';
+    }, {passive:true});
+  </script>
+</body>
+</html>

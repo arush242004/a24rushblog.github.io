@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The algorithm that taught me to slow down — your name</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,300&family=Shippori+Mincho:wght@400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+  <div class="grain"></div>
+  <div class="progress-bar" id="pb"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo">
+        <span class="logo-en">your name</span>
+        <span class="logo-jp">静かな場所</span>
+      </a>
+      <nav>
+        <a href="../home.html"  class="nav-link">writing</a>
+        <a href="../about.html" class="nav-link">about</a>
+      </nav>
+    </div>
+    <div class="rule"></div>
+  </header>
+
+  <main class="main main--narrow">
+    <article class="fade-in">
+      <header class="post-header">
+        <div class="post-row-meta">
+          <span class="date">March 28, 2026</span>
+          <span class="tag">computing</span>
+        </div>
+        <h1 class="post-title-large">The algorithm that taught me to slow down</h1>
+      </header>
+      <div class="prose">
+        <p>Dynamic programming has a reputation for being hard. I think this is because people approach it the wrong way — they try to figure out the transitions before they understand the subproblems. They want to see the whole staircase before they've found the first step.</p>
+        <p>The idea is simple: a problem has <em>optimal substructure</em> if its optimal solution can be built from optimal solutions to smaller instances. And it has <em>overlapping subproblems</em> if those smaller instances repeat. When both conditions hold, you memoize — you remember — and an exponential algorithm becomes polynomial.</p>
+        <h2>The canonical example</h2>
+        <p>Fibonacci. Naively:</p>
+        <pre><code>def fib(n):
+    if n &lt;= 1: return n
+    return fib(n-1) + fib(n-2)</code></pre>
+        <p>This runs in $O(2^n)$. Every call fans into two more, most of which repeat work already done. With memoization:</p>
+        <pre><code>def fib(n, memo={}):
+    if n in memo: return memo[n]
+    if n &lt;= 1: return n
+    memo[n] = fib(n-1, memo) + fib(n-2, memo)
+    return memo[n]</code></pre>
+        <p>Now it's $O(n)$. Each subproblem is solved exactly once. The rest is just lookup.</p>
+        <h2>What this teaches</h2>
+        <p>The lesson isn't about tables. It's about trust in decomposition. Before you can solve $n$, you need $n-1$ and $n-2$. Before you write the chapter, you need the outline. Before you read the paper, you need the prerequisites.</p>
+        <p>Restlessness wants to skip to $n$. It wants the result without the path. Dynamic programming is a formal proof that you cannot. The recurrence demands the base cases. The tower demands the foundation.</p>
+        <p>Slow down. Solve the small things. Trust the recurrence.</p>
+      </div>
+      <footer class="post-footer">
+        <a href="../home.html" class="back-link">← all writing</a>
+      </footer>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026</span>
+    <a href="https://github.com/yourusername" target="_blank">github</a>
+  </footer>
+  <script>
+    var pb = document.getElementById('pb');
+    window.addEventListener('scroll', function(){
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      pb.style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%';
+    }, {passive:true});
+  </script>
+</body>
+</html>

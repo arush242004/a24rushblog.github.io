@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A quiet place</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;1,200;1,300&family=Shippori+Mincho:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:    #1a1410;
+      --paper:  #f5f0e8;
+      --red:    #c0392b;
+      --gold:   #d4a853;
+      --pine:   #2d4a2d;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background: var(--paper);
+      overflow-x: hidden;
+    }
+
+    /* Tall spacer drives the scroll */
+    #scroll-spacer { height: 350vh; }
+
+    /* Sticky viewport container */
+    #scene-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Full-bleed SVG scene */
+    #ukiyo-scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Fade overlay (scene → white) */
+    #fade-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--paper);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity 0.04s linear;
+    }
+
+    /* Welcome text */
+    #welcome-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 11;
+    }
+    .jp-sub {
+      font-family: 'Shippori Mincho', serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+      letter-spacing: 0.35em;
+      color: #7a6a58;
+    }
+    #welcome-screen h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 200;
+      font-size: clamp(3rem, 9vw, 6rem);
+      letter-spacing: 0.2em;
+      color: var(--ink);
+      text-transform: uppercase;
+    }
+    .enter-link {
+      margin-top: 1.8rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 0.72rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #8a7860;
+      text-decoration: none;
+      border-bottom: 1px solid #c0a882;
+      padding-bottom: 3px;
+      pointer-events: all;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .enter-link:hover { color: var(--ink); border-color: var(--ink); }
+
+    /* ── SVG ANIMATIONS ── */
+
+    /* Room and frame fade in */
+    #room-group    { animation: revealFade 1.8s ease forwards 0s;   opacity: 0; }
+    #landscape-grp { animation: revealUp   2.2s cubic-bezier(.16,1,.3,1) forwards 0.2s; opacity: 0; }
+    #sun-group     { animation: revealUp   3s   cubic-bezier(.16,1,.3,1) forwards 0.9s; opacity: 0; }
+    #tree-group    { animation: revealFade 2s   ease forwards 0.35s; opacity: 0; }
+    #shrubs-group  { animation: revealFade 2s   ease forwards 0.5s;  opacity: 0; }
+
+    @keyframes revealFade { to { opacity: 1; } }
+    @keyframes revealUp   {
+      0%   { opacity: 0; transform: translateY(14px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Sun glow pulse */
+    #sun-glow-outer { animation: glowPulse 5s ease-in-out infinite 4s; }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.28; }
+      50%       { opacity: 0.48; }
+    }
+
+    /* Mist wisps */
+    .mist-wisp { animation: mistDrift 14s ease-in-out infinite; }
+    .mist-wisp:nth-child(2) { animation-delay: -5s; animation-duration: 18s; }
+    .mist-wisp:nth-child(3) { animation-delay: -10s; animation-duration: 22s; }
+    @keyframes mistDrift {
+      0%, 100% { transform: translateX(0); opacity: 0.18; }
+      50%       { transform: translateX(20px); opacity: 0.09; }
+    }
+
+    /* Birds across sky */
+    .flock-a { animation: flyA 30s linear infinite; }
+    .flock-b { animation: flyB 40s linear infinite 6s; }
+    @keyframes flyA {
+      0%   { transform: translate(-200px, 0px); }
+      100% { transform: translate(calc(100vw + 300px), -40px); }
+    }
+    @keyframes flyB {
+      0%   { transform: translate(-150px, 20px); }
+      100% { transform: translate(calc(100vw + 200px), -20px); }
+    }
+    /* Wing flap */
+    .wl { transform-origin: 100% 50%; animation: flapL 0.55s ease-in-out infinite alternate; }
+    .wr { transform-origin: 0%   50%; animation: flapR 0.55s ease-in-out infinite alternate; }
+    @keyframes flapL { from { transform: rotate(-20deg); } to { transform: rotate(6deg); } }
+    @keyframes flapR { from { transform: rotate(20deg);  } to { transform: rotate(-6deg); } }
+
+    /* Tree sway */
+    #tree-group { transform-origin: 175px 750px; }
+    #tree-group.loaded { animation: revealFade 2s ease forwards, treeSway 9s ease-in-out infinite 2.5s; }
+    @keyframes treeSway {
+      0%, 100% { transform: rotate(0deg); }
+      35%       { transform: rotate(0.7deg); }
+      70%       { transform: rotate(-0.4deg); }
+    }
+
+    /* Woman walk-in */
+    #woman-group { opacity: 0; }
+    #woman-group.enter {
+      animation: womanEnter 3.4s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    #woman-group.seated { opacity: 1; }
+    @keyframes womanEnter {
+      0%   { opacity: 0; transform: translateX(180px) translateY(8px); }
+      12%  { opacity: 1; }
+      72%  { transform: translateX(0px) translateY(0px); }
+      84%  { transform: translateX(-5px) translateY(1px); }
+      100% { opacity: 1; transform: translateX(0px) translateY(0px); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="scroll-spacer"></div>
+
+<div id="scene-sticky">
+
+  <svg id="ukiyo-scene" viewBox="0 0 1200 750" preserveAspectRatio="xMidYMid slice"
+       xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#d6cfc4"/>
+        <stop offset="45%"  stop-color="#e8e0d2"/>
+        <stop offset="100%" stop-color="#f4ece0"/>
+      </linearGradient>
+      <radialGradient id="sunGlowG" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#f0c050" stop-opacity="0.65"/>
+        <stop offset="55%"  stop-color="#e06030" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#e06030" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="sunBodyG" cx="38%" cy="35%" r="65%">
+        <stop offset="0%"   stop-color="#f8d868"/>
+        <stop offset="48%"  stop-color="#e04818"/>
+        <stop offset="100%" stop-color="#aa1808"/>
+      </radialGradient>
+      <linearGradient id="snowG" x1="0.1" y1="0" x2="0.4" y2="1">
+        <stop offset="0%"   stop-color="#f8f4ee"/>
+        <stop offset="100%" stop-color="#d8d2c8"/>
+      </linearGradient>
+      <linearGradient id="tatamiG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#c8b888"/>
+        <stop offset="100%" stop-color="#a08858"/>
+      </linearGradient>
+      <linearGradient id="shojiG" x1="0" y1="0" x2="0.1" y2="1">
+        <stop offset="0%"   stop-color="#f2eadc"/>
+        <stop offset="100%" stop-color="#e2d8c8"/>
+      </linearGradient>
+      <linearGradient id="mistG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#f4efe8" stop-opacity="0"/>
+        <stop offset="28%"  stop-color="#f4efe8" stop-opacity="0.55"/>
+        <stop offset="72%"  stop-color="#f4efe8" stop-opacity="0.48"/>
+        <stop offset="100%" stop-color="#f4efe8" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="ink">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <clipPath id="clip"><rect width="1200" height="750"/></clipPath>
+    </defs>
+
+    <g clip-path="url(#clip)">
+
+    <!-- SKY -->
+    <rect width="1200" height="750" fill="url(#skyG)"/>
+
+    <!-- SUN -->
+    <g id="sun-group">
+      <circle id="sun-glow-outer" cx="598" cy="308" r="52" fill="url(#sunGlowG)" opacity="0.28"/>
+      <circle cx="598" cy="308" r="34" fill="url(#sunGlowG)" opacity="0.38"/>
+      <circle cx="598" cy="308" r="21" fill="url(#sunBodyG)" filter="url(#ink)"/>
+      <!-- Ukiyo-e ray lines -->
+      <g stroke="#b83818" stroke-width="0.55" opacity="0.22">
+        <line x1="598" y1="281" x2="598" y2="270"/>
+        <line x1="598" y1="335" x2="598" y2="346"/>
+        <line x1="571" y1="308" x2="560" y2="308"/>
+        <line x1="625" y1="308" x2="636" y2="308"/>
+        <line x1="579" y1="289" x2="571" y2="281"/>
+        <line x1="617" y1="327" x2="625" y2="335"/>
+        <line x1="617" y1="289" x2="625" y2="281"/>
+        <line x1="579" y1="327" x2="571" y2="335"/>
+      </g>
+    </g>
+
+    <!-- LANDSCAPE -->
+    <g id="landscape-grp" filter="url(#ink)">
+      <!-- Far range -->
+      <path d="M0,455 Q150,360 300,420 Q400,375 520,415 Q598,365 678,415 Q800,375 900,420 Q1050,360 1200,455 L1200,750 L0,750Z"
+            fill="#c0b8a8" opacity="0.42"/>
+      <!-- Fuji body -->
+      <path d="M370,452 Q430,388 484,344 Q524,308 560,284 Q578,270 598,262 Q618,270 640,284 Q676,308 716,344 Q770,388 830,452 Q878,488 926,498 L818,510 Q754,472 702,456 Q650,464 598,460 Q546,464 494,456 Q442,472 376,510 L272,498 Q322,488 370,452Z"
+            fill="#9aa0aa"/>
+      <!-- Snow cap -->
+      <path d="M540,298 Q558,278 578,267 Q588,261 598,258 Q608,261 620,267 Q640,278 658,298 Q642,290 626,286 Q612,283 598,283 Q584,283 570,286 Q554,290 540,298Z"
+            fill="url(#snowG)"/>
+      <path d="M552,294 Q560,287 570,283" stroke="#c0b8ae" stroke-width="0.7" fill="none" opacity="0.65"/>
+      <path d="M644,294 Q636,287 626,283" stroke="#c0b8ae" stroke-width="0.7" fill="none" opacity="0.65"/>
+      <!-- Fuji contour woodblock lines -->
+      <path d="M510,368 Q542,340 570,322 Q582,314 598,310 Q614,314 628,322 Q658,340 690,368"
+            stroke="#8898a8" stroke-width="0.75" fill="none" opacity="0.45"/>
+      <path d="M490,402 Q526,368 556,350 Q574,338 598,334 Q622,338 642,350 Q672,368 710,402"
+            stroke="#8898a8" stroke-width="0.65" fill="none" opacity="0.35"/>
+      <!-- Rolling foothills -->
+      <path d="M0,498 Q120,462 240,490 Q360,472 480,496 Q540,486 598,490 Q656,486 720,496 Q840,472 960,490 Q1080,462 1200,498 L1200,750 L0,750Z"
+            fill="#b0a890" opacity="0.58"/>
+      <!-- Mid ground -->
+      <path d="M0,524 Q160,502 320,518 Q460,504 540,518 Q568,510 598,512 Q628,510 660,518 Q740,504 880,518 Q1040,502 1200,524 L1200,750 L0,750Z"
+            fill="#a09878" opacity="0.68"/>
+      <!-- Near ground -->
+      <path d="M0,562 Q300,544 598,546 Q896,544 1200,562 L1200,750 L0,750Z"
+            fill="#8a8060" opacity="0.48"/>
+    </g>
+
+    <!-- MIST -->
+    <g opacity="0.65">
+      <ellipse class="mist-wisp" cx="460"  cy="488" rx="290" ry="20" fill="url(#mistG)"/>
+      <ellipse class="mist-wisp" cx="740"  cy="514" rx="230" ry="15" fill="url(#mistG)"/>
+      <ellipse class="mist-wisp" cx="330"  cy="504" rx="210" ry="13" fill="url(#mistG)"/>
+    </g>
+
+    <!-- BIRDS flock A -->
+    <g class="flock-a">
+      <g transform="translate(80,218)">
+        <path class="wl" d="M0,0 Q-11,-5 -19,-2" stroke="#201808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path class="wr" d="M0,0 Q11,-5 19,-2"  stroke="#201808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(108,208)">
+        <path class="wl" d="M0,0 Q-9,-4 -16,-1"  stroke="#201808" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <path class="wr" d="M0,0 Q9,-4 16,-1"   stroke="#201808" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(96,232)">
+        <path class="wl" d="M0,0 Q-8,-4 -14,-1"  stroke="#201808" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path class="wr" d="M0,0 Q8,-4 14,-1"   stroke="#201808" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+    <!-- BIRDS flock B (higher, smaller) -->
+    <g class="flock-b">
+      <g transform="translate(180,165)">
+        <path class="wl" d="M0,0 Q-8,-3 -13,-1" stroke="#201808" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+        <path class="wr" d="M0,0 Q8,-3 13,-1"  stroke="#201808" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(200,157)">
+        <path class="wl" d="M0,0 Q-7,-3 -12,-1" stroke="#201808" stroke-width="1"   fill="none" stroke-linecap="round"/>
+        <path class="wr" d="M0,0 Q7,-3 12,-1"  stroke="#201808" stroke-width="1"   fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- PINE TREE (left) -->
+    <g id="tree-group">
+      <!-- Trunk — ink brushstroke feel -->
+      <path d="M172,750 Q176,678 178,608 Q176,548 180,488 Q181,444 183,412"
+            stroke="#1e1810" stroke-width="8" fill="none" stroke-linecap="round" filter="url(#ink)"/>
+      <!-- Branches -->
+      <path d="M180,462 Q152,444 118,434 Q95,428 74,422"
+            stroke="#1e1810" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+      <path d="M181,476 Q212,456 244,450 Q268,446 290,440"
+            stroke="#1e1810" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M177,516 Q148,500 120,494 Q98,490 80,485"
+            stroke="#1e1810" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M182,538 Q208,524 234,520 Q255,517 272,512"
+            stroke="#1e1810" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <!-- Foliage clusters — dark pine green -->
+      <g fill="#263e22">
+        <ellipse cx="183" cy="400" rx="30" ry="19" opacity="0.92" transform="rotate(-12,183,400)"/>
+        <ellipse cx="160" cy="412" rx="24" ry="15" opacity="0.85" transform="rotate(-26,160,412)"/>
+        <ellipse cx="206" cy="408" rx="22" ry="14" opacity="0.85" transform="rotate(8,206,408)"/>
+        <ellipse cx="94"  cy="426" rx="28" ry="14" opacity="0.88" transform="rotate(-7,94,426)"/>
+        <ellipse cx="68"  cy="420" rx="20" ry="12" opacity="0.78" transform="rotate(-18,68,420)"/>
+        <ellipse cx="262" cy="442" rx="26" ry="13" opacity="0.84" transform="rotate(4,262,442)"/>
+        <ellipse cx="290" cy="436" rx="18" ry="11" opacity="0.74" transform="rotate(14,290,436)"/>
+        <ellipse cx="100" cy="488" rx="24" ry="12" opacity="0.82" transform="rotate(-9,100,488)"/>
+        <ellipse cx="76"  cy="484" rx="16" ry="10" opacity="0.72" transform="rotate(-20,76,484)"/>
+        <ellipse cx="244" cy="514" rx="21" ry="11" opacity="0.78" transform="rotate(6,244,514)"/>
+      </g>
+      <!-- Needle strokes -->
+      <g stroke="#182810" stroke-width="0.7" fill="none" opacity="0.45">
+        <path d="M183,388 Q176,396 171,404 M183,388 Q190,397 196,404"/>
+        <path d="M94,416  Q87,423  83,430  M94,416  Q101,424 107,430"/>
+        <path d="M262,432 Q254,440 250,447 M262,432 Q269,441 276,447"/>
+      </g>
+    </g>
+
+    <!-- FOREGROUND SHRUBS -->
+    <g id="shrubs-group">
+      <ellipse cx="918" cy="608" rx="62" ry="28" fill="#384e26" opacity="0.9" filter="url(#ink)"/>
+      <ellipse cx="972" cy="598" rx="48" ry="24" fill="#2c4620" opacity="0.86"/>
+      <ellipse cx="876" cy="618" rx="42" ry="20" fill="#486230" opacity="0.82"/>
+      <ellipse cx="1044" cy="614" rx="58" ry="22" fill="#384e24" opacity="0.86"/>
+      <ellipse cx="1096" cy="606" rx="40" ry="18" fill="#2a4620" opacity="0.80"/>
+      <ellipse cx="1160" cy="620" rx="58" ry="25" fill="#486030" opacity="0.90"/>
+      <ellipse cx="858"  cy="626" rx="18" ry="10" fill="#787060" opacity="0.68"/>
+      <ellipse cx="1006" cy="630" rx="14" ry="8"  fill="#888070" opacity="0.62"/>
+      <!-- Left shrubs near tree -->
+      <ellipse cx="262" cy="618" rx="52" ry="22" fill="#384e26" opacity="0.84"/>
+      <ellipse cx="315" cy="606" rx="40" ry="20" fill="#2c4620" opacity="0.80"/>
+      <ellipse cx="220" cy="626" rx="44" ry="18" fill="#486230" opacity="0.76"/>
+      <!-- Grass strokes -->
+      <g stroke="#384820" stroke-width="1.1" fill="none" opacity="0.55">
+        <path d="M398,702 Q400,686 396,671"/>
+        <path d="M409,700 Q413,682 407,664"/>
+        <path d="M420,704 Q422,688 418,674"/>
+        <path d="M762,697 Q764,680 760,665"/>
+        <path d="M773,700 Q777,682 771,667"/>
+        <path d="M784,695 Q786,680 782,666"/>
+        <path d="M830,698 Q832,682 828,666"/>
+      </g>
+    </g>
+
+    <!-- ROOM -->
+    <g id="room-group">
+      <!-- Tatami floor -->
+      <path d="M-60,750 Q0,578 105,558 Q300,538 598,542 Q896,538 1095,558 Q1200,578 1260,750Z"
+            fill="url(#tatamiG)" opacity="0.90"/>
+      <!-- Tatami grid -->
+      <g stroke="#9a8040" stroke-width="0.65" opacity="0.30">
+        <line x1="10"   y1="750" x2="205"  y2="568"/>
+        <line x1="200"  y1="750" x2="352"  y2="556"/>
+        <line x1="400"  y1="750" x2="500"  y2="546"/>
+        <line x1="598"  y1="750" x2="598"  y2="542"/>
+        <line x1="800"  y1="750" x2="700"  y2="546"/>
+        <line x1="1000" y1="750" x2="848"  y2="556"/>
+        <line x1="1190" y1="750" x2="995"  y2="568"/>
+        <path d="M56,686  Q598,652 1144,686"/>
+        <path d="M18,722  Q598,694 1182,722"/>
+        <path d="M100,648 Q598,618 1100,648"/>
+        <path d="M148,612 Q598,584 1052,612"/>
+      </g>
+
+      <!-- LEFT SHOJI -->
+      <rect x="-10" y="0" width="288" height="750" fill="url(#shojiG)" opacity="0.86"/>
+      <g stroke="#8a7050" stroke-width="1.1" opacity="0.48">
+        <line x1="58"  y1="0" x2="58"  y2="750"/>
+        <line x1="116" y1="0" x2="116" y2="750"/>
+        <line x1="174" y1="0" x2="174" y2="750"/>
+        <line x1="232" y1="0" x2="232" y2="750"/>
+        <line x1="-10" y1="75"  x2="278" y2="75"/>
+        <line x1="-10" y1="150" x2="278" y2="150"/>
+        <line x1="-10" y1="225" x2="278" y2="225"/>
+        <line x1="-10" y1="300" x2="278" y2="300"/>
+        <line x1="-10" y1="375" x2="278" y2="375"/>
+        <line x1="-10" y1="450" x2="278" y2="450"/>
+        <line x1="-10" y1="525" x2="278" y2="525"/>
+        <line x1="-10" y1="600" x2="278" y2="600"/>
+      </g>
+      <rect x="-10" y="0" width="288" height="750" fill="none" stroke="#6a5030" stroke-width="3.5"/>
+
+      <!-- RIGHT SHOJI -->
+      <rect x="922" y="0" width="288" height="750" fill="url(#shojiG)" opacity="0.86"/>
+      <g stroke="#8a7050" stroke-width="1.1" opacity="0.48">
+        <line x1="980"  y1="0" x2="980"  y2="750"/>
+        <line x1="1038" y1="0" x2="1038" y2="750"/>
+        <line x1="1096" y1="0" x2="1096" y2="750"/>
+        <line x1="1154" y1="0" x2="1154" y2="750"/>
+        <line x1="922" y1="75"  x2="1210" y2="75"/>
+        <line x1="922" y1="150" x2="1210" y2="150"/>
+        <line x1="922" y1="225" x2="1210" y2="225"/>
+        <line x1="922" y1="300" x2="1210" y2="300"/>
+        <line x1="922" y1="375" x2="1210" y2="375"/>
+        <line x1="922" y1="450" x2="1210" y2="450"/>
+        <line x1="922" y1="525" x2="1210" y2="525"/>
+        <line x1="922" y1="600" x2="1210" y2="600"/>
+      </g>
+      <rect x="922" y="0" width="288" height="750" fill="none" stroke="#6a5030" stroke-width="3.5"/>
+
+      <!-- DOOR FRAME -->
+      <rect x="272" y="0" width="656" height="20" fill="#3e2c18" rx="1"/>
+      <rect x="272" y="0" width="17"  height="750" fill="#3e2c18"/>
+      <rect x="911" y="0" width="17"  height="750" fill="#3e2c18"/>
+      <!-- Ceiling bar -->
+      <rect x="0" y="0" width="1200" height="15" fill="#2e1e0e" opacity="0.75"/>
+
+      <!-- LOW TABLE (chabudai) -->
+      <!-- Table top -->
+      <path d="M376,644 Q598,626 822,644 Q832,648 822,659 Q598,641 376,659 Q366,655 376,644Z"
+            fill="#886028"/>
+      <path d="M382,647 Q598,630 818,647" stroke="#b89848" stroke-width="0.75" fill="none" opacity="0.38"/>
+      <!-- Legs -->
+      <line x1="408" y1="657" x2="404" y2="702" stroke="#6a4018" stroke-width="5.5" stroke-linecap="round"/>
+      <line x1="788" y1="657" x2="792" y2="702" stroke="#6a4018" stroke-width="5.5" stroke-linecap="round"/>
+      <!-- Tea cup -->
+      <ellipse cx="536" cy="636" rx="14" ry="7"   fill="#2e1e10" opacity="0.82"/>
+      <ellipse cx="536" cy="633" rx="12" ry="5"   fill="#50381e" opacity="0.88"/>
+      <ellipse cx="536" cy="630" rx="9"  ry="3.2" fill="#c09850" opacity="0.55"/>
+      <!-- Steam wisps -->
+      <g stroke="#d8d0c0" stroke-width="0.7" fill="none" opacity="0.35" stroke-linecap="round">
+        <path d="M534,628 Q532,622 534,616"/>
+        <path d="M538,627 Q540,620 538,613"/>
+      </g>
+    </g>
+
+    <!-- WOMAN IN KIMONO -->
+    <g id="woman-group">
+      <!-- Shadow -->
+      <ellipse cx="490" cy="706" rx="42" ry="8" fill="#60481a" opacity="0.22"/>
+
+      <!-- Main kimono body (deep indigo-blue) -->
+      <path d="M443,658 Q447,618 454,590 Q459,574 470,566 Q480,560 490,558 Q502,556 513,560 Q523,566 530,578 Q538,596 540,620 Q542,648 540,666 Q521,672 490,675 Q460,672 443,658Z"
+            fill="#284870"/>
+      <!-- Kimono pattern — subtle wave (Ukiyo-e nami) -->
+      <g stroke="#3a6090" stroke-width="0.65" fill="none" opacity="0.38">
+        <path d="M456,590 Q462,585 468,590 Q474,595 480,590"/>
+        <path d="M506,594 Q512,589 518,594 Q524,599 530,594"/>
+        <path d="M460,610 Q466,605 472,610 Q478,615 484,610"/>
+        <path d="M508,614 Q514,609 520,614 Q526,619 532,614"/>
+        <path d="M455,632 Q461,627 467,632 Q473,637 479,632"/>
+        <path d="M505,636 Q511,631 517,636 Q523,641 529,636"/>
+      </g>
+      <!-- Collar (white) -->
+      <path d="M477,558 Q490,554 503,558 Q497,571 490,577 Q483,571 477,558Z"
+            fill="#f0e8d8"/>
+      <!-- Obi sash (warm gold) -->
+      <path d="M448,614 Q490,608 534,614 Q536,624 534,632 Q490,626 448,632 Q446,624 448,614Z"
+            fill="#c88c18"/>
+      <!-- Obi knot hint -->
+      <path d="M442,618 Q436,614 434,622 Q436,631 442,628Z" fill="#d8a020"/>
+
+      <!-- Left sleeve -->
+      <path d="M446,578 Q430,592 426,613 Q426,630 434,634 Q439,622 444,607 Q447,595 451,584Z"
+            fill="#203860"/>
+      <!-- Sleeve cuff (white lining) -->
+      <path d="M426,614 Q423,622 426,631 Q434,635 438,626 Q434,622 434,613Z"
+            fill="#e8e0d0"/>
+
+      <!-- Seated lower kimono -->
+      <path d="M446,660 Q468,672 490,675 Q512,672 534,660 Q530,692 512,702 Q490,708 468,702 Q450,692 446,660Z"
+            fill="#1e3860" opacity="0.92"/>
+
+      <!-- Neck -->
+      <rect x="484" y="547" width="12" height="16" rx="5" fill="#d0a878"/>
+      <!-- Head -->
+      <ellipse cx="490" cy="536" rx="21" ry="23" fill="#d0a878"/>
+
+      <!-- Hair — shimada bun -->
+      <path d="M470,530 Q473,509 490,504 Q507,509 510,530 Q504,520 490,518 Q476,520 470,530Z"
+            fill="#181008"/>
+      <ellipse cx="490" cy="507" rx="17" ry="9.5" fill="#181008"/>
+      <!-- Kanzashi pin -->
+      <line x1="499" y1="502" x2="508" y2="491" stroke="#c89828" stroke-width="1.6"/>
+      <circle cx="508" cy="490" r="2.8" fill="#e0b838"/>
+      <circle cx="508" cy="490" r="1.4" fill="#f8d858"/>
+
+      <!-- Face — serene -->
+      <path d="M481,534 Q485.5,531 490,532" stroke="#341408" stroke-width="1.15" fill="none" stroke-linecap="round"/>
+      <path d="M490,532 Q494.5,531 499,534" stroke="#341408" stroke-width="1.15" fill="none" stroke-linecap="round"/>
+      <path d="M488.5,539 Q490,541 491.5,539" stroke="#b08868" stroke-width="0.75" fill="none"/>
+      <path d="M486,544 Q490,547 494,544" stroke="#b06858" stroke-width="1.05" fill="none" stroke-linecap="round"/>
+      <ellipse cx="480" cy="539" rx="5.5" ry="3" fill="#d87868" opacity="0.18"/>
+      <ellipse cx="500" cy="539" rx="5.5" ry="3" fill="#d87868" opacity="0.18"/>
+
+      <!-- Hands resting on lap -->
+      <ellipse cx="470" cy="668" rx="11" ry="6.5" fill="#d0a878" transform="rotate(-10,470,668)"/>
+      <ellipse cx="510" cy="668" rx="11" ry="6.5" fill="#d0a878" transform="rotate(10,510,668)"/>
+    </g>
+
+    <!-- Bottom vignette shadow -->
+    <path d="M0,710 L1200,710 L1200,750 L0,750Z"
+          fill="#3a2c10" opacity="0.18"/>
+
+    </g><!-- end clip -->
+  </svg>
+
+  <!-- Fade overlay -->
+  <div id="fade-overlay"></div>
+
+  <!-- Welcome -->
+  <div id="welcome-screen">
+    <p class="jp-sub">ようこそ</p>
+    <h1>Welcome</h1>
+    <p class="jp-sub">静かな場所へ &nbsp;·&nbsp; a quiet place to think</p>
+    <a href="home.html" class="enter-link">enter &nbsp;→</a>
+  </div>
+
+</div><!-- end sticky -->
+
+<script>
+(function () {
+
+  // Woman walks in at 2.6s
+  const woman = document.getElementById('woman-group');
+  setTimeout(function () {
+    woman.classList.add('enter');
+    woman.addEventListener('animationend', function () {
+      woman.classList.remove('enter');
+      woman.classList.add('seated');
+    }, { once: true });
+  }, 2600);
+
+  // Tree needs loaded class to combine animations
+  document.getElementById('tree-group').classList.add('loaded');
+
+  // Scroll-driven fade
+  const overlay = document.getElementById('fade-overlay');
+  const welcome = document.getElementById('welcome-screen');
+  const totalScroll = document.getElementById('scroll-spacer').offsetHeight - window.innerHeight;
+
+  function onScroll () {
+    var p = Math.min(Math.max(window.scrollY / totalScroll, 0), 1);
+
+    // 0 → 0.58 : scene fades to white
+    var fadeP = Math.min(p / 0.58, 1);
+    overlay.style.opacity = fadeP;
+
+    // 0.58 → 1 : welcome fades in
+    var textP = Math.max((p - 0.58) / 0.42, 0);
+    welcome.style.opacity = textP;
+    welcome.style.pointerEvents = textP > 0.5 ? 'all' : 'none';
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+})();
+</script>
+
+</body>
+</html>
